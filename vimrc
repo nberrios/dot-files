@@ -171,36 +171,49 @@ highlight ExtraWhitespace ctermbg=darkred guibg=darkred ctermfg=yellow guifg=yel
 match ExtraWhitespace /\s\+$/
 
 
-function! RaiseExceptionForFlake8Issues()
+function! RaiseWarningForFlake8Issues()
     if &filetype == 'python'
         let s:v_control = 'svn'
         let s:dir_name = expand("%:p:h")
-        silent exe '!svn info ' . s:dir_name . ' > /dev/null 2>&1'
+        let s:start_dir = getcwd()
+        silent exe 'cd ' . s:dir_name
+        silent exe '!svn info > /dev/null 2>&1'
         if v:shell_error > 0
             let s:v_control = 'git'
-            silent exe '!git --git-dir=' . s:dir_name . '/.git --work-tree=' . s:dir_name . ' status > /dev/null 2>&1'
+            silent exe '!git status > /dev/null 2>&1'
         endif
         if v:shell_error == 0
             let s:file_name = expand('%:p')
             new
             if s:v_control == 'svn'
-                silent exe ':read !svn diff ' . s:file_name . ' | flake8 --diff'
+                silent exe ':read !svn diff -x -U0 ' . s:file_name . ' | flake8 --diff'
             elseif s:v_control == 'git'
-                let s:start_dir = getcwd()
-                silent exe 'cd ' . s:dir_name
-                silent exe ':read !git diff -U0 ' . s:file_name . ' | flake8 --diff'
-                silent exe 'cd ' . s:start_dir
+                try
+                    let s:git_repo_path = system("git rev-parse --show-toplevel")
+                    if v:shell_error == 0
+                        silent exe 'cd ' . s:git_repo_path
+                        silent exe ':read !git diff -U0 ' . s:file_name . ' | flake8 --diff'
+                    endif
+                catch /.*/
+                    echohl WarningMsg | echo "Flake8 hit a traceback attempting to run on git diff" | echohl None
+                endtry
             endif
             let s:res_length = line('$')
             if s:res_length != 1
+                if search('\v^(fatal|svn: E155010)', 'nw') != 0
+                    silent 2d
+                    silent exe ':read !flake8 ' . s:file_name
+                endif
                 silent 1d
                 silent %yank p
                 echohl WarningMsg | echo @p | echohl None
             endif
             bd!
         endif
+        silent exe 'cd ' . s:start_dir
     endif
 endfunction
+
 
 function! RaiseExceptionForUnresolvedIssues()
     if search('\v^[<=>]{7}( .*|$)', 'nw') != 0
