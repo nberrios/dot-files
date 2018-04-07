@@ -129,9 +129,9 @@ bindsym Mod1+Shift+9 move container to workspace 9
 bindsym Mod1+Shift+0 move container to workspace 10
 
 # pulse audio controls (Alt + F1 = mute, + F2 = softer, F3 = louder)
-bindsym Mod1+slash exec pactl set-sink-mute 1 toggle
-bindsym Mod1+comma exec pactl -- set-sink-volume 1 -5%
-bindsym Mod1+period exec pactl set-sink-volume 1 +5%
+bindsym Mod1+slash exec pactl set-sink-mute 0 toggle
+bindsym Mod1+comma exec pactl -- set-sink-volume 0 -5%
+bindsym Mod1+period exec pactl set-sink-volume 0 +5%
 
 # reload the configuration file
 bindsym Mod1+Shift+c reload
@@ -141,8 +141,12 @@ bindsym Mod1+Shift+r restart
 bindsym Mod1+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 #lock screen
-bindsym Mod1+Shift+apostrophe exec /home/nberrios/bash_scripts/i3/i3lock.sh
-bindsym Mod1+Shift+period exec /home/nberrios/bash_scripts/i3/i3suspend.sh
+bindsym Mod1+Shift+apostrophe exec ~/bash_scripts/i3/i3lock.sh
+bindsym Mod1+Shift+period exec ~/bash_scripts/i3/i3suspend.sh
+
+# Sreen brightness controls
+bindsym XF86MonBrightnessUp exec xbacklight -inc 10 # increase screen brightness
+bindsym XF86MonBrightnessDown exec xbacklight -dec 10 # decrease screen brightness
 
 # resize window (you can also use the mouse for that)
 mode "resize" {

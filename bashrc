@@ -159,17 +159,10 @@ fi
 # Comment in the above and uncomment this below for a color prompt
 PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u\[\033[0m\]@\[\033[01;34m\]\h\[\033[01;36m\]\w\[\033[01;37m\]\$\[\033[0m\] '
 
-# Check out https://github.com/kyokley/vim-psql-pager for a nifty psql pager. Also available for pgcli
-alias psql='PAGER=vimpsqlpager psql';
-alias pgcli='PAGER=vimpgclipager pgcli';
-
-# for wallpaper background in i3
-feh --bg-scale /home/nberrios/Downloads/bakemonogatari.png
 
 alias tmux="TERM=screen-256color-bce tmux"
 
-# this will generate ctags recursively on the project path specified
-# usage: $ctags /path/to/project
+# generate tags on the project specified
 generateTags() {
   cd ~
   if [ -e ~/mytags ]; then
@@ -178,3 +171,25 @@ generateTags() {
   ctags -f mytags -R "$1"
 }
 alias ctags=generateTags
+smith(){
+    docker run -it --rm \
+    --privileged -v $PWD:/write \
+    -v cache:/var/cache \
+    -v mock:/var/lib/mock smith $@
+}
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+dump_schema(){
+    pg_dump -s -n public -n audit -n docs -n fleet -n archive --no-privileges --no-tablespaces --no-security-labels --no-owner --format=p -f schema.sql $@
+}
+pythonX() {
+    docker run -it --rm \
+    --privileged -v $PWD:/write \
+    python:3.7-rc-slim python3 $@
+}
+
+psql9.6.8() {
+    docker run -ti --rm \
+    postgres:9.6.8-alpine \
+    psql $@
+}
